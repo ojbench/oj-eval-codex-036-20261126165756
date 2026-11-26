@@ -33,3 +33,6 @@ The supplied data directory is absent in this environment.
 - 879456: Compile Error, 0/100. The judge requires `sjtu::dynamic_bitset`,
   although the published interface omits the namespace. Added the namespace
   and retained a global alias for compatibility with the stated interface.
+- 879458: 90/100. All groups passed except the constructor group's 32 MiB
+  memory limit. Added noexcept move operations to transfer storage without
+  deep copies, including during vector reallocation.

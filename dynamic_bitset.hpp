@@ -30,6 +30,19 @@ public:
     ~dynamic_bitset() = default;
     dynamic_bitset(const dynamic_bitset &) = default;
     dynamic_bitset &operator=(const dynamic_bitset &) = default;
+    dynamic_bitset(dynamic_bitset &&other) noexcept : size_(other.size_) {
+        words_.swap(other.words_);
+        other.size_ = 0;
+    }
+    dynamic_bitset &operator=(dynamic_bitset &&other) noexcept {
+        if (this != &other) {
+            words_ = std::move(other.words_);
+            size_ = other.size_;
+            other.words_.clear();
+            other.size_ = 0;
+        }
+        return *this;
+    }
     dynamic_bitset(std::size_t n) : words_(word_count(n), 0), size_(n) {}
     dynamic_bitset(const std::string &str) : dynamic_bitset(str.size()) {
         for (std::size_t i = 0; i < size_; ++i)

@@ -23,6 +23,13 @@ int main() {
     if (!check(sjtu::dynamic_bitset(), "")) return 7;
     for (std::size_t n = 0; n <= 260; ++n) {
         const std::string s = random_string(n);
+        dynamic_bitset source(s);
+        dynamic_bitset moved(std::move(source));
+        if (!check(moved, s) || !check(source, "")) return 8;
+        source = std::move(moved);
+        if (!check(source, s) || !check(moved, "")) return 9;
+        source = std::move(source);
+        if (!check(source, s)) return 10;
         if (!check(dynamic_bitset(n), std::string(n, '0'))) return 1;
         for (std::size_t shift = 0; shift <= 260; ++shift) {
             dynamic_bitset left(s), right(s);
