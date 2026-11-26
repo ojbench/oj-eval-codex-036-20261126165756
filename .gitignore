@@ -1,0 +1,7 @@
+CMakeFiles/
+CMakeCache.txt
+build/
+code
+.env
+.acmoj_token
+__pycache__/

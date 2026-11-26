@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.10)
+project(dynamic_bitset_solution LANGUAGES CXX)
+add_executable(code tests/bitset_test.cpp)
+target_compile_features(code PRIVATE cxx_std_11)
+enable_testing()
+add_test(NAME differential COMMAND code)
