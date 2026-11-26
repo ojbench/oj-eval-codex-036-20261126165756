@@ -20,6 +20,7 @@ static std::string random_string(std::size_t n) {
     return s;
 }
 int main() {
+    if (!check(sjtu::dynamic_bitset(), "")) return 7;
     for (std::size_t n = 0; n <= 260; ++n) {
         const std::string s = random_string(n);
         if (!check(dynamic_bitset(n), std::string(n, '0'))) return 1;

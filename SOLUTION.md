@@ -27,3 +27,9 @@ ctest --test-dir build --output-on-failure
 Tests cover all pairs of lengths up to 260 for bitwise operations, shifts
 from 0 through 260 for each length, and 400,000 random state transitions.
 The supplied data directory is absent in this environment.
+
+## Submission history
+
+- 879456: Compile Error, 0/100. The judge requires `sjtu::dynamic_bitset`,
+  although the published interface omits the namespace. Added the namespace
+  and retained a global alias for compatibility with the stated interface.

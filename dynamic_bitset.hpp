@@ -7,6 +7,8 @@
 #include <iostream>
 #include <algorithm>
 
+namespace sjtu {
+
 struct dynamic_bitset {
 private:
     using word = std::uint64_t;
@@ -137,5 +139,9 @@ public:
         return *this;
     }
 };
+
+} // namespace sjtu
+
+using sjtu::dynamic_bitset;
 
 #endif
