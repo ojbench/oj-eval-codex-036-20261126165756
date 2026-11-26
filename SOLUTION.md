@@ -5,9 +5,12 @@ headers. Each uint64_t holds 64 consecutive bits. Unused high bits are always
 zero. AND masks the final overlapping word to preserve the nonoverlapping tail.
 Shifts traverse in the direction that prevents overwriting unread source words.
 
-Indexing, individual set, and size take constant time. Push takes amortized
-constant time. Bulk operations take linear time in the number of affected
-64-bit words; string construction takes linear time in the string length.
+Indexing and size take constant time. Individual set takes constant time once
+storage exists; the first write of one to an implicit zero bitset allocates
+and initializes its packed words. Push takes amortized constant time after
+this allocation. Bulk operations take linear time in the number of affected
+64-bit words, plus any initial allocation; string construction takes linear
+time in the string length. Size-only construction takes constant time.
 Storage is proportional to the number of packed words (vector capacity is
 retained after shrinking).
 
@@ -39,3 +42,7 @@ The supplied data directory is absent in this environment.
 - 879459: 90/100, with unchanged constructor memory usage. Added an implicit
   all-zero representation: size-only construction and copies need no packed
   allocation until a bit becomes one. Packed operations support both forms.
+- 879462: Accepted, 100/100, all ten test points passed. Constructor test
+  memory fell to 3,956,736 bytes. Four of five submission attempts used.
+  Final implementation passed differential tests with AddressSanitizer and
+  UndefinedBehaviorSanitizer enabled.
