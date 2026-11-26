@@ -15,6 +15,11 @@ private:
     std::vector<word> words_;
     std::size_t size_ = 0;
 
+    // An empty word vector represents an all-zero bitset of any length.
+    void materialize() {
+        if (words_.empty()) words_.resize(word_count(size_), 0);
+    }
+
     static std::size_t word_count(std::size_t n) {
         return n / 64 + (n % 64 != 0);
     }
@@ -22,7 +27,7 @@ private:
         return (word(1) << n) - 1; // Only called with n < 64.
     }
     void trim() {
-        if (size_ % 64) words_.back() &= low_mask(size_ % 64);
+        if (!words_.empty() && size_ % 64) words_.back() &= low_mask(size_ % 64);
     }
 
 public:
@@ -43,22 +48,32 @@ public:
         }
         return *this;
     }
-    dynamic_bitset(std::size_t n) : words_(word_count(n), 0), size_(n) {}
+    dynamic_bitset(std::size_t n) : size_(n) {}
     dynamic_bitset(const std::string &str) : dynamic_bitset(str.size()) {
+        materialize();
         for (std::size_t i = 0; i < size_; ++i)
             words_[i / 64] |= word(str[i] == '1') << (i % 64);
     }
 
     bool operator[](std::size_t n) const {
-        return (words_[n / 64] >> (n % 64)) & 1;
+        return !words_.empty() && ((words_[n / 64] >> (n % 64)) & 1);
     }
     dynamic_bitset &set(std::size_t n, bool val = true) {
+        if (words_.empty()) {
+            if (!val) return *this;
+            materialize();
+        }
         const word mask = word(1) << (n % 64);
         if (val) words_[n / 64] |= mask;
         else words_[n / 64] &= ~mask;
         return *this;
     }
     dynamic_bitset &push_back(bool val) {
+        if (words_.empty()) {
+            ++size_;
+            if (val) set(size_ - 1);
+            return *this;
+        }
         if (size_ % 64 == 0) words_.push_back(0);
         if (val) words_.back() |= word(1) << (size_ % 64);
         ++size_;
@@ -70,6 +85,7 @@ public:
         return true;
     }
     bool all() const {
+        if (words_.empty()) return size_ == 0;
         for (std::size_t i = 0; i < size_ / 64; ++i)
             if (words_[i] != ~word(0)) return false;
         return size_ % 64 == 0 || words_.back() == low_mask(size_ % 64);
@@ -77,12 +93,20 @@ public:
 
     dynamic_bitset &operator|=(const dynamic_bitset &other) {
         const std::size_t n = std::min(size_, other.size_);
+        if (!n || other.words_.empty()) return *this;
+        materialize();
         for (std::size_t i = 0; i < n / 64; ++i) words_[i] |= other.words_[i];
         if (n % 64) words_[n / 64] |= other.words_[n / 64] & low_mask(n % 64);
         return *this;
     }
     dynamic_bitset &operator&=(const dynamic_bitset &other) {
         const std::size_t n = std::min(size_, other.size_);
+        if (!n || words_.empty()) return *this;
+        if (other.words_.empty()) {
+            std::fill(words_.begin(), words_.begin() + n / 64, word(0));
+            if (n % 64) words_[n / 64] &= ~low_mask(n % 64);
+            return *this;
+        }
         for (std::size_t i = 0; i < n / 64; ++i) words_[i] &= other.words_[i];
         // Ones outside the overlap preserve the remaining bits of this word.
         if (n % 64) words_[n / 64] &= other.words_[n / 64] | ~low_mask(n % 64);
@@ -90,6 +114,8 @@ public:
     }
     dynamic_bitset &operator^=(const dynamic_bitset &other) {
         const std::size_t n = std::min(size_, other.size_);
+        if (!n || other.words_.empty()) return *this;
+        materialize();
         for (std::size_t i = 0; i < n / 64; ++i) words_[i] ^= other.words_[i];
         if (n % 64) words_[n / 64] ^= other.words_[n / 64] & low_mask(n % 64);
         return *this;
@@ -97,6 +123,7 @@ public:
 
     dynamic_bitset &operator<<=(std::size_t n) {
         if (!n) return *this;
+        if (words_.empty()) { size_ += n; return *this; }
         const std::size_t old_words = words_.size();
         const std::size_t whole = n / 64, part = n % 64;
         const std::size_t new_size = size_ + n;
@@ -123,6 +150,7 @@ public:
             return *this;
         }
         if (!n) return *this;
+        if (words_.empty()) { size_ -= n; return *this; }
         const std::size_t whole = n / 64, part = n % 64;
         const std::size_t new_size = size_ - n;
         for (std::size_t i = 0; i < word_count(new_size); ++i) {
@@ -138,11 +166,13 @@ public:
         return *this;
     }
     dynamic_bitset &set() {
+        materialize();
         std::fill(words_.begin(), words_.end(), ~word(0));
         trim();
         return *this;
     }
     dynamic_bitset &flip() {
+        materialize();
         for (word &w : words_) w = ~w;
         trim();
         return *this;

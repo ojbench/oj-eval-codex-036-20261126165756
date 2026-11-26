@@ -51,6 +51,17 @@ int main() {
                 if (op == 1) a &= b;
                 if (op == 2) a ^= b;
                 if (!check(a, expected) || !check(b, t)) return 4;
+                dynamic_bitset zeros(m), lazy(n);
+                a = dynamic_bitset(s);
+                if (op == 0) { a |= zeros; lazy |= b; }
+                if (op == 1) { a &= zeros; lazy &= b; }
+                if (op == 2) { a ^= zeros; lazy ^= b; }
+                std::string tail = s, prefix(n, '0');
+                for (std::size_t i = 0; i < std::min(n, m); ++i) {
+                    if (op == 1) tail[i] = '0';
+                    else prefix[i] = t[i];
+                }
+                if (!check(a, tail) || !check(lazy, prefix)) return 11;
             }
         }
     }

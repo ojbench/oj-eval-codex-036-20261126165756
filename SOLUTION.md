@@ -36,3 +36,6 @@ The supplied data directory is absent in this environment.
 - 879458: 90/100. All groups passed except the constructor group's 32 MiB
   memory limit. Added noexcept move operations to transfer storage without
   deep copies, including during vector reallocation.
+- 879459: 90/100, with unchanged constructor memory usage. Added an implicit
+  all-zero representation: size-only construction and copies need no packed
+  allocation until a bit becomes one. Packed operations support both forms.
